@@ -9,12 +9,18 @@ import t4.NeuralNet.Activation.ActivationFunction;
  * @author Teddy
  */
 public class Bridge {
+	/**
+	 * Input Neuron
+	 */
 	protected Neuron neuron;
+	/**
+	 * Weight associated with this Bridge
+	 */
 	protected double weight;
 	
 	/**
-	 * Constructs a new Bridge from the given Neuron with the
-	 * specified weight.
+	 * Constructs a new Bridge starting from the given Neuron
+	 * with the specified weight.
 	 * @param neuron Neuron used as the input for this Bridge
 	 * @param weight Weight for the Neuron's input
 	 */
@@ -25,6 +31,7 @@ public class Bridge {
 	
 	/**
 	 * Calculates the weighted input of the Neuron for this Bridge.
+	 * @param func Activation Function
 	 * @return Input Neuron's value multiplied by the weight of
 	 * the Bridge
 	 */

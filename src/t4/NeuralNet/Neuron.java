@@ -10,8 +10,17 @@ import t4.NeuralNet.Activation.ActivationFunction;
  * @author Teddy
  */
 public class Neuron {
+	/**
+	 * Output value of this neuron
+	 */
 	protected double value;
+	/**
+	 * Layer this Neuron is for
+	 */
 	protected Layer layer;
+	/**
+	 * Set of Bridges marking connections to Neurons in the previous layer
+	 */
 	protected Bridge[] inputs;
 	
 	/**
@@ -30,6 +39,7 @@ public class Neuron {
 	/**
 	 * Update the value of the Neuron to be the weighted sum
 	 * of the Neurons linked via the input Bridges.
+	 * @param func Activation Function
 	 * @return Updated value for this Neuron
 	 */
 	protected double calculateValue(ActivationFunction func) {

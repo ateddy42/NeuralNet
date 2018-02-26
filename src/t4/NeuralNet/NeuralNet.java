@@ -16,14 +16,38 @@ import t4.NeuralNet.Activation.Threshold;
  * @author Teddy
  */
 public class NeuralNet {
+	/**
+	 * Default learning rate
+	 */
 	public static final double ALPHA = 0.5;
+	/**
+	 * Default input bias
+	 */
 	public static final double BIAS = 1;
+	/**
+	 * Initial weight for bias value
+	 */
 	public static double INIT_BIAS_WEIGHT = -1;
+	/**
+	 * Initial weight for neuron value
+	 */
 	public static double INIT_NEURON_WEIGHT = 1;
 	
+	/**
+	 * Layers of this NeuralNet
+	 */
 	protected ArrayList<Layer> layers;
+	/**
+	 * Input Bias Neuron
+	 */
 	protected Neuron bias;
+	/**
+	 * Learning rate of this NeuralNet
+	 */
 	protected double alpha;
+	/**
+	 * Activation Function for this NeuralNet
+	 */
 	protected ActivationFunction activation;
 	
 	/**
@@ -37,7 +61,7 @@ public class NeuralNet {
 	/**
 	 * Constructs a new NeuralNet object with the given activation
 	 * function. Uses the default learning rate and bias values.
-	 * @param activation
+	 * @param activation Activation Function
 	 */
 	public NeuralNet(ActivationFunction activation) {
 		this(activation, ALPHA, BIAS);
@@ -88,7 +112,6 @@ public class NeuralNet {
 	/**
 	 * Sets the values for the input layer from the given array
 	 * @param values Input values for the NeuralNet
-	 * @return Whether the function succeeded
 	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
 	 */
 	public void setInputValues(double[] values) throws IndexOutOfBoundsException {
@@ -116,7 +139,7 @@ public class NeuralNet {
 	 * @param input Values for the input layer
 	 * @param desired Desired output values
 	 * @param payoff Payoff for this set of inputs
-	 * @throws Exception If number of values != number of Neurons
+	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
 	 */
 	public void backpropagate(double[] input, double[] desired,
 			double payoff) throws IndexOutOfBoundsException {

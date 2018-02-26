@@ -7,9 +7,24 @@ package t4.NeuralNet;
  * @author Teddy
  */
 public class Layer {
+	/**
+	 * Array of neurons in this layer
+	 */
 	protected Neuron[] neurons;
+	
+	/**
+	 * NeuralNet this layer is part of
+	 */
 	protected NeuralNet nn;
+	
+	/**
+	 * Previous layer
+	 */
 	protected Layer previous;
+	
+	/**
+	 * Name of this layer
+	 */
 	private String name;
 	
 	/**
@@ -17,7 +32,9 @@ public class Layer {
 	 * Initializes the Neurons with default values (see {@link NeuralNet})
 	 * and connects them with Bridges to the neurons in the previous layer
 	 * as well as the NeuralNet bias.
+	 * @param nn NeuralNet this layer should be added to
 	 * @param numNeurons Number of Neurons in this Layer
+	 * @param name Name of this layer
 	 */
 	public Layer(NeuralNet nn, int numNeurons, String name) {
 		this.nn = nn;

@@ -18,8 +18,8 @@ public abstract class ActivationFunction {
 	
 	/**
 	 * Calculates the value of the derivative for the given input.
-	 * @param input Value to find the derivative of
+	 * @param func Activation Function to find the derivative of
 	 * @return Value of the derivative for the given value
 	 */
-	public abstract double getDerivative(double f);
+	public abstract double getDerivative(double func);
 }
