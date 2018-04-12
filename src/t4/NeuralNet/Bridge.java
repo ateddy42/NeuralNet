@@ -12,7 +12,13 @@ public class Bridge {
 	/**
 	 * Input Neuron
 	 */
-	protected Neuron neuron;
+	protected Neuron input;
+	
+	/**
+	 * Output Neuron
+	 */
+	protected Neuron output;
+	
 	/**
 	 * Weight associated with this Bridge
 	 */
@@ -24,9 +30,12 @@ public class Bridge {
 	 * @param neuron Neuron used as the input for this Bridge
 	 * @param weight Weight for the Neuron's input
 	 */
-	protected Bridge(Neuron neuron, double weight) {
-		this.neuron = neuron;
+	protected Bridge(Neuron input, Neuron output, double weight) {
+		this.input = input;
+		this.output = output;
 		this.weight = weight;
+		input.outputs.add(this);
+		output.inputs.add(this);
 	}
 	
 	/**
@@ -36,6 +45,10 @@ public class Bridge {
 	 * the Bridge
 	 */
 	protected double getWeightedInput(ActivationFunction func) {
-		return neuron.getOutput(func) * this.weight;
+		return input.getOutput(func) * this.weight;
+	}
+	
+	public String toString() {
+		return String.valueOf(weight);
 	}
 }

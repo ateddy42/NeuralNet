@@ -88,14 +88,14 @@ public class NeuralNet {
 		layers = new ArrayList<>();
 		this.activation = activation;
 		this.alpha = alpha;
-		this.bias = new Neuron(bias, 0, null);
+		this.bias = new Neuron(bias, null);
 	}
 	
 	/**
 	 * Return the final layer of this NeuralNet
 	 * @return Output Layer
 	 */
-	public Layer getOutputLayer() {
+	protected Layer getOutputLayer() {
 		if (layers.isEmpty()) return null;
 		return layers.get(layers.size() - 1);
 	}
@@ -104,7 +104,7 @@ public class NeuralNet {
 	 * Return the first layer of this NeuralNet
 	 * @return Input Layer
 	 */
-	public Layer getInputLayer() {
+	protected Layer getInputLayer() {
 		if (layers.isEmpty()) return null;
 		return layers.get(0);
 	}
@@ -138,22 +138,29 @@ public class NeuralNet {
 	 * array.
 	 * @param input Values for the input layer
 	 * @param desired Desired output values
+	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
+	 */
+	public void backpropagate(double[] input, double[] desired) throws IndexOutOfBoundsException {
+		backpropagate(input, desired, 1);
+	}
+	
+	/**
+	 * Update the values of the weights for all Bridges in this
+	 * NeuralNet for the non-null entries in the <code>desired</code>
+	 * array.
+	 * @param input Values for the input layer
+	 * @param desired Desired output values
 	 * @param payoff Payoff for this set of inputs
 	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
 	 */
 	public void backpropagate(double[] input, double[] desired,
 			double payoff) throws IndexOutOfBoundsException {
 		setInputValues(input);
-		double[] output = getOutputValues();
-		for (int i = layers.size() - 1; i >= 0; i--) {
-			Layer layer = layers.get(i);
-			Layer previous = layer.previous;
-			if (previous == null) return;
-			
-			for (int j = 0; j < desired.length; j++) {
-				Neuron n = layer.neurons[j];
-				n.backpropagate(alpha, output[j], desired[j], payoff, activation);
-			}
+		Layer layer = this.getOutputLayer();
+		layer.setDesired(desired);
+		while (layer != null) {
+			layer.backpropagate(payoff);
+			layer = layer.previous;
 		}
 	}
 }

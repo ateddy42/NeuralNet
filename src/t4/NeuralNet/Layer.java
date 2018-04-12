@@ -43,18 +43,15 @@ public class Layer {
 		previous = nn.getOutputLayer();
 		int numInputs = previous == null ? 0 : previous.neurons.length + 1;
 		for (int i = 0; i < numNeurons; i++) {
-			Neuron neuron = new Neuron(0, numInputs, this);
+			Neuron neuron = new Neuron(0, this);
 			// check if previous layer exists
 			if (previous != null) {
 				// add bridge to bias
-				neuron.inputs[0] = new Bridge(nn.bias,
-						NeuralNet.INIT_BIAS_WEIGHT);
+				nn.bias.link(neuron, NeuralNet.INIT_BIAS_WEIGHT);
 				
 				// add bridge to all previous layer neurons
 				for (int j = 1; j < numInputs; j++) {
-					neuron.inputs[j] = new Bridge(
-							previous.neurons[j - 1],
-							NeuralNet.INIT_NEURON_WEIGHT);
+					previous.neurons[j - 1].link(neuron, NeuralNet.INIT_NEURON_WEIGHT);
 				}
 			}
 			neurons[i] = neuron;
@@ -105,6 +102,32 @@ public class Layer {
 			throw new IndexOutOfBoundsException("Number of input values does not match the number of Neurons");
 		for (int i = 0; i < neurons.length; i++) {
 			neurons[i].setValue(values[i]);
+		}
+	}
+	
+	/**
+	 * Sets the desired output for each of the Neurons in this layer
+	 * @param values Array of desired outputs
+	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
+	 */
+	protected void setDesired(double[] values) throws IndexOutOfBoundsException {
+		if (neurons.length != values.length)
+			throw new IndexOutOfBoundsException("Number of input values does not match the number of Neurons");
+		for (int i = 0; i < neurons.length; i++) {
+			neurons[i].setDesired(values[i]);
+		}
+	}
+	
+	/**
+	 * Update the values of the weights for the input Bridges connected
+	 * to each of the Neurons in this layer according to {@link Neuron#backpropagate(
+	 * double, double, t4.NeuralNet.Activation.ActivationFunction) Neuron.backpropagate()}
+	 * @param payoff Payoff of this move
+	 */
+	public void backpropagate(double payoff) {
+		for (int i = 0; i < neurons.length; i++) {
+			Neuron n = neurons[i];
+			n.backpropagate(nn.alpha, payoff, nn.activation);
 		}
 	}
 	

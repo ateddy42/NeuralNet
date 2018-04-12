@@ -1,5 +1,7 @@
 package t4.NeuralNet;
 
+import java.util.ArrayList;
+
 import t4.NeuralNet.Activation.ActivationFunction;
 
 /**
@@ -15,25 +17,37 @@ public class Neuron {
 	 */
 	protected double value;
 	/**
+	 * Desired output value of this neuron
+	 */
+	protected Double desired;
+	/**
 	 * Layer this Neuron is for
 	 */
 	protected Layer layer;
 	/**
 	 * Set of Bridges marking connections to Neurons in the previous layer
 	 */
-	protected Bridge[] inputs;
+	protected ArrayList<Bridge> inputs;
+	/**
+	 * Set of Bridges marking connections to Neurons in the next layer
+	 */
+	protected ArrayList<Bridge> outputs;
 	
 	/**
 	 * Constructs a new Neuron with the given value, number
 	 * of input Bridges, and the Layer it resides in.
 	 * @param value Value of the Neuron
-	 * @param numInputs Number of input Bridges
 	 * @param layer Layer this Neuron is part of
 	 */
-	protected Neuron(double value, int numInputs, Layer layer) {
+	protected Neuron(double value, Layer layer) {
 		this.value = value;
-		this.inputs = new Bridge[numInputs];
+		this.inputs = new ArrayList<>();
+		this.outputs = new ArrayList<>();
 		this.layer = layer;
+	}
+	
+	protected void link(Neuron n, double weight) {
+		new Bridge(this, n, weight);
 	}
 	
 	/**
@@ -43,10 +57,10 @@ public class Neuron {
 	 * @return Updated value for this Neuron
 	 */
 	protected double calculateValue(ActivationFunction func) {
-		if (inputs.length != 0) {
+		if (!inputs.isEmpty()) {
 			value = 0;
-			for (int i = 0; i < inputs.length; i++) {
-				value += inputs[i].getWeightedInput(func);
+			for (int i = 0; i < inputs.size(); i++) {
+				value += inputs.get(i).getWeightedInput(func);
 			}
 			value = func.getOutput(value);
 		}
@@ -60,9 +74,7 @@ public class Neuron {
 	 * @return Output from this Neuron
 	 */
 	public double getOutput(ActivationFunction func) {
-		if (inputs.length == 0)
-			return value;
-		return func.getOutput(value);
+		return inputs.isEmpty() ? value : func.getOutput(value);
 	}
 	
 	/**
@@ -74,29 +86,60 @@ public class Neuron {
 	}
 	
 	/**
+	 * Sets the desired output of this Neuron to the given value
+	 * @param value New desired output for this Neuron
+	 */
+	public void setDesired(double desired) {
+		this.desired = desired;
+	}
+	
+	/**
 	 * Update the values of the weights for the input Bridges connected
 	 * to this Neuron using the following function:<br><br>
-	 * <code>w = w + alpha * (d - f) * a' * x</code><br><br>
+	 * <code>w = w + payoff * alpha * delta * x</code><br><br>
 	 * Where:
 	 * <br>-w is the current weight
+	 * <br>-payoff is the payoff of this move
 	 * <br>-alpha is the learning rate
-	 * <br>-d is the desired output
-	 * <br>-f is the observed output
-	 * <br>-a' is the derivative of the activation function
+	 * <br>-delta is the calculated delta for this neuron
 	 * <br>-x is the input value to the bridge's weight
 	 * 
 	 * @param alpha Learning rate
 	 * @param f Observed output
-	 * @param d Desired output
 	 * @param payoff Payoff of this move
-	 * @param func Activation funciton
+	 * @param func Activation function
 	 */
-	protected void backpropagate(double alpha, double f, double d,
-			double payoff, ActivationFunction func) {
-		double delta = payoff * alpha * (d - f) * func.getDerivative(f);
+	protected void backpropagate(double alpha, double payoff,
+			ActivationFunction func) {
+		double change = payoff * alpha * calculateDelta(func);
 		for (Bridge b : inputs) {
-			b.weight += delta * b.neuron.getOutput(func);
+			b.weight += change * b.input.getOutput(func);
 		}
+	}
+	
+	/**
+	 * Calculate the delta value for this Neuron. For the output layer,
+	 * this returns the real output times the gradient:<br><br>
+	 * <code>delta_i = (desired_i - value_i) * gradient</code><br><br>
+	 * For layer l which is not an output layer, this returns the gradient
+	 * times the sum of the weighted deltas for the l+1 layer:<br><br>
+	 * <code>delta_i = gradient * Sum(delta_j * weight_i_j)</code><br><br>
+	 * Where:
+	 * <br>-j is a neuron in the l+1 layer
+	 * <br>-weight_i_j is the weight of the Bridge from Neuron i to j
+	 * @param func Activation function
+	 * @return
+	 */
+	private double calculateDelta(ActivationFunction func) {
+		if (desired != null) {
+			// output layer, so return real output error times the gradient
+			return (desired - value) * func.getDerivative(value);
+		}
+		double sumOfOutputDeltas = 0;
+		for (Bridge b : outputs) {
+			sumOfOutputDeltas += b.output.calculateDelta(func) * b.weight;
+		}
+		return func.getDerivative(value) * sumOfOutputDeltas;
 	}
 	
 	public String toString() {
