@@ -36,7 +36,7 @@ public class Layer {
 	 * @param numNeurons Number of Neurons in this Layer
 	 * @param name Name of this layer
 	 */
-	public Layer(NeuralNet nn, int numNeurons, String name) {
+	protected Layer(NeuralNet nn, int numNeurons, String name) {
 		this.nn = nn;
 		this.name = name;
 		this.neurons = new Neuron[numNeurons];
@@ -44,14 +44,18 @@ public class Layer {
 		int numInputs = previous == null ? 0 : previous.neurons.length + 1;
 		for (int i = 0; i < numNeurons; i++) {
 			Neuron neuron = new Neuron(0, this);
-			// check if previous layer exists
-			if (previous != null) {
-				// add bridge to bias
-				nn.bias.link(neuron, NeuralNet.INIT_BIAS_WEIGHT);
-				
+			// add bridge to bias
+			new Bridge(nn.bias, neuron, NeuralNet.INIT_BIAS_WEIGHT);
+
+			if (previous == null) {
+				// add bridge to all input values
+				for (int j = 0; j < nn.inputs.length; j++) {
+					new Bridge(nn.inputs[j], neuron, nn.getInitialBridgeWeight());
+				}
+			} else {
 				// add bridge to all previous layer neurons
 				for (int j = 1; j < numInputs; j++) {
-					previous.neurons[j - 1].link(neuron, NeuralNet.INIT_NEURON_WEIGHT);
+					previous.neurons[j - 1].link(neuron, nn.getInitialBridgeWeight());
 				}
 			}
 			neurons[i] = neuron;
@@ -87,22 +91,9 @@ public class Layer {
 	protected double[] getValues() {
 		double[] values = new double[neurons.length];
 		for (int i = 0; i < neurons.length; i++) {
-			values[i] = neurons[i].value;
+			values[i] = neurons[i].calculateValue(nn.activation);
 		}
 		return values;
-	}
-	
-	/**
-	 * Sets the values for each of the Neurons in this Layer
-	 * @param values Array of values
-	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
-	 */
-	protected void setValues(double[] values) throws IndexOutOfBoundsException {
-		if (neurons.length != values.length)
-			throw new IndexOutOfBoundsException("Number of input values does not match the number of Neurons");
-		for (int i = 0; i < neurons.length; i++) {
-			neurons[i].setValue(values[i]);
-		}
 	}
 	
 	/**
@@ -124,7 +115,7 @@ public class Layer {
 	 * double, double, t4.NeuralNet.Activation.ActivationFunction) Neuron.backpropagate()}
 	 * @param payoff Payoff of this move
 	 */
-	public void backpropagate(double payoff) {
+	protected void backpropagate(double payoff) {
 		for (int i = 0; i < neurons.length; i++) {
 			Neuron n = neurons[i];
 			n.backpropagate(nn.alpha, payoff, nn.activation);

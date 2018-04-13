@@ -11,11 +11,7 @@ import t4.NeuralNet.Activation.ActivationFunction;
  * 
  * @author Teddy
  */
-public class Neuron {
-	/**
-	 * Output value of this neuron
-	 */
-	protected double value;
+public class Neuron extends BridgeInput {
 	/**
 	 * Desired output value of this neuron
 	 */
@@ -40,7 +36,7 @@ public class Neuron {
 	 * @param layer Layer this Neuron is part of
 	 */
 	protected Neuron(double value, Layer layer) {
-		this.value = value;
+		super(value);
 		this.inputs = new ArrayList<>();
 		this.outputs = new ArrayList<>();
 		this.layer = layer;
@@ -57,39 +53,21 @@ public class Neuron {
 	 * @return Updated value for this Neuron
 	 */
 	protected double calculateValue(ActivationFunction func) {
-		if (!inputs.isEmpty()) {
-			value = 0;
-			for (int i = 0; i < inputs.size(); i++) {
-				value += inputs.get(i).getWeightedInput(func);
-			}
-			value = func.getOutput(value);
+		// update value based on weighted inputs
+		value = 0.0;
+		for (Bridge b : inputs) {
+			value += b.getWeightedInput();
 		}
+		value = func.getOutput(value);
+		
 		return this.value;
-	}
-	
-	/**
-	 * Computes the output from this Neuron using the given
-	 * activation function
-	 * @param func Activation function
-	 * @return Output from this Neuron
-	 */
-	public double getOutput(ActivationFunction func) {
-		return inputs.isEmpty() ? value : func.getOutput(value);
-	}
-	
-	/**
-	 * Sets the value of this Neuron to the given value
-	 * @param value New value for this Neuron
-	 */
-	public void setValue(double value) {
-		this.value = value;
 	}
 	
 	/**
 	 * Sets the desired output of this Neuron to the given value
 	 * @param value New desired output for this Neuron
 	 */
-	public void setDesired(double desired) {
+	protected void setDesired(double desired) {
 		this.desired = desired;
 	}
 	
@@ -113,7 +91,7 @@ public class Neuron {
 			ActivationFunction func) {
 		double change = payoff * alpha * calculateDelta(func);
 		for (Bridge b : inputs) {
-			b.weight += change * b.input.getOutput(func);
+			b.weight += change * b.input.getValue();
 		}
 	}
 	
@@ -139,7 +117,7 @@ public class Neuron {
 		for (Bridge b : outputs) {
 			sumOfOutputDeltas += b.output.calculateDelta(func) * b.weight;
 		}
-		return func.getDerivative(value) * sumOfOutputDeltas;
+		return func.getDerivative(calculateValue(func)) * sumOfOutputDeltas;
 	}
 	
 	public String toString() {

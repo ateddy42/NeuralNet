@@ -1,6 +1,7 @@
 package t4.NeuralNet;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import t4.NeuralNet.Activation.ActivationFunction;
 import t4.NeuralNet.Activation.Threshold;
@@ -29,18 +30,21 @@ public class NeuralNet {
 	 */
 	public static double INIT_BIAS_WEIGHT = -1;
 	/**
-	 * Initial weight for neuron value
+	 * Instance used to generate random values for new Bridge weights
 	 */
-	public static double INIT_NEURON_WEIGHT = 1;
-	
+	protected Random rand;
 	/**
 	 * Layers of this NeuralNet
 	 */
 	protected ArrayList<Layer> layers;
 	/**
-	 * Input Bias Neuron
+	 * Input values of this NeuralNet
 	 */
-	protected Neuron bias;
+	protected BridgeInput[] inputs;
+	/**
+	 * Input Bias
+	 */
+	protected BridgeInput bias;
 	/**
 	 * Learning rate of this NeuralNet
 	 */
@@ -54,8 +58,8 @@ public class NeuralNet {
 	 * Constructs a new NeuralNet object with the Threshold activation
 	 * function, and the default learning rate and bias value.
 	 */
-	public NeuralNet() {
-		this(new Threshold(), ALPHA, BIAS);
+	public NeuralNet(int numInputs) {
+		this(numInputs, new Threshold(), ALPHA, BIAS);
 	}
 	
 	/**
@@ -63,8 +67,8 @@ public class NeuralNet {
 	 * function. Uses the default learning rate and bias values.
 	 * @param activation Activation Function
 	 */
-	public NeuralNet(ActivationFunction activation) {
-		this(activation, ALPHA, BIAS);
+	public NeuralNet(int numInputs, ActivationFunction activation) {
+		this(numInputs, activation, ALPHA, BIAS);
 	}
 	
 	/**
@@ -73,8 +77,8 @@ public class NeuralNet {
 	 * @param activation Activation function
 	 * @param alpha Learning rate
 	 */
-	public NeuralNet(ActivationFunction activation, double alpha) {
-		this(activation, alpha, BIAS);
+	public NeuralNet(int numInputs, ActivationFunction activation, double alpha) {
+		this(numInputs, activation, alpha, BIAS);
 	}
 	
 	/**
@@ -84,11 +88,26 @@ public class NeuralNet {
 	 * @param alpha Learning rate
 	 * @param bias Value for the bias
 	 */
-	public NeuralNet(ActivationFunction activation, double alpha, double bias) {
+	public NeuralNet(int numInputs, ActivationFunction activation, double alpha, double bias) {
+		rand = new Random();
 		layers = new ArrayList<>();
+		inputs = new BridgeInput[numInputs];
+		for (int i = 0; i < numInputs; i++) {
+			inputs[i] = new BridgeInput(0);
+		}
 		this.activation = activation;
 		this.alpha = alpha;
-		this.bias = new Neuron(bias, null);
+		this.bias = new BridgeInput(bias);
+	}
+	
+	/**
+	 * Add a new layer to the Neural Network with the given name
+	 * and number of neurons
+	 * @param numNeurons Number of Neurons in the Layer
+	 * @param name Name of the Layer
+	 */
+	public void addLayer(int numNeurons, String name) {
+		new Layer(this, numNeurons, name);
 	}
 	
 	/**
@@ -110,12 +129,21 @@ public class NeuralNet {
 	}
 	
 	/**
-	 * Sets the values for the input layer from the given array
-	 * @param values Input values for the NeuralNet
-	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
+	 * Returns 1 + the a random double between 0 and 1. This
+	 * is used as the initial weight for new Bridges.
+	 * @return Initial weight for new Bridges
 	 */
-	public void setInputValues(double[] values) throws IndexOutOfBoundsException {
-		getInputLayer().setValues(values);
+	protected double getInitialBridgeWeight() {
+		return 1 + rand.nextDouble();
+	}
+	
+	/**
+	 * Sets the values for the input layer from the given array
+	 * @param inputs Input values for the NeuralNet
+	 */
+	public void setInputValues(double[] inputs) {
+		for (int i = 0; i < inputs.length; i++)
+			this.inputs[i].setValue(inputs[i]);
 	}
 	
 	/**
@@ -140,7 +168,8 @@ public class NeuralNet {
 	 * @param desired Desired output values
 	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
 	 */
-	public void backpropagate(double[] input, double[] desired) throws IndexOutOfBoundsException {
+	public void backpropagate(double[] input, double[] desired)
+			throws IndexOutOfBoundsException {
 		backpropagate(input, desired, 1);
 	}
 	
@@ -153,9 +182,10 @@ public class NeuralNet {
 	 * @param payoff Payoff for this set of inputs
 	 * @throws IndexOutOfBoundsException If number of values != number of Neurons
 	 */
-	public void backpropagate(double[] input, double[] desired,
-			double payoff) throws IndexOutOfBoundsException {
+	public void backpropagate(double[] input, double[] desired, double payoff)
+			throws IndexOutOfBoundsException {
 		setInputValues(input);
+		getOutputValues();
 		Layer layer = this.getOutputLayer();
 		layer.setDesired(desired);
 		while (layer != null) {
