@@ -90,6 +90,8 @@ public class Neuron extends BridgeInput {
 	protected void backpropagate(double alpha, double payoff,
 			ActivationFunction func) {
 		double change = payoff * alpha * calculateDelta(func);
+		if (layer.nn.useAnnealing)
+			change += layer.nn.getAnnealingAmount();
 		for (Bridge b : inputs) {
 			b.weight += change * b.input.getValue();
 		}

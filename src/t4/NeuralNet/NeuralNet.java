@@ -22,6 +22,15 @@ public class NeuralNet {
 	 */
 	public static final double ALPHA = 0.5;
 	/**
+	 * Initial value for simmulated annealing
+	 */
+	public static final double INIT_BETA = 0.75;
+	/**
+	 * Rate of decay for {@link beta}. Values must be
+	 * between 0 and 1, exclusive. Higher values decay slower.
+	 */
+	public static final double BETA_DECAY_RATE = 0.95;
+	/**
 	 * Default input bias
 	 */
 	public static final double BIAS = 1;
@@ -30,9 +39,17 @@ public class NeuralNet {
 	 */
 	public static double INIT_BIAS_WEIGHT = -1;
 	/**
-	 * Instance used to generate random values for new Bridge weights
+	 * Instance used to generate random values
 	 */
 	protected Random rand;
+	/**
+	 * Whether to use simulated annealing
+	 */
+	protected boolean useAnnealing;
+	/**
+	 * Number of rounds of backpropagation completed
+	 */
+	private int numRounds;
 	/**
 	 * Layers of this NeuralNet
 	 */
@@ -59,7 +76,7 @@ public class NeuralNet {
 	 * function, and the default learning rate and bias value.
 	 */
 	public NeuralNet(int numInputs) {
-		this(numInputs, new Threshold(), ALPHA, BIAS);
+		this(numInputs, new Threshold(), ALPHA, BIAS, false);
 	}
 	
 	/**
@@ -68,7 +85,7 @@ public class NeuralNet {
 	 * @param activation Activation Function
 	 */
 	public NeuralNet(int numInputs, ActivationFunction activation) {
-		this(numInputs, activation, ALPHA, BIAS);
+		this(numInputs, activation, ALPHA, BIAS, false);
 	}
 	
 	/**
@@ -78,7 +95,7 @@ public class NeuralNet {
 	 * @param alpha Learning rate
 	 */
 	public NeuralNet(int numInputs, ActivationFunction activation, double alpha) {
-		this(numInputs, activation, alpha, BIAS);
+		this(numInputs, activation, alpha, BIAS, false);
 	}
 	
 	/**
@@ -89,6 +106,19 @@ public class NeuralNet {
 	 * @param bias Value for the bias
 	 */
 	public NeuralNet(int numInputs, ActivationFunction activation, double alpha, double bias) {
+		this(numInputs, activation, alpha, bias, false);
+	}
+	
+	/**
+	 * Constructs a new NeuralNet object with the given activation
+	 * function, learning rate, and bias value.
+	 * @param activation Activation function
+	 * @param alpha Learning rate
+	 * @param bias Value for the bias
+	 * @param useAnnealing Whether to use simmulated annealing
+	 */
+	public NeuralNet(int numInputs, ActivationFunction activation, double alpha,
+			double bias, boolean useAnnealing) {
 		rand = new Random();
 		layers = new ArrayList<>();
 		inputs = new BridgeInput[numInputs];
@@ -98,6 +128,8 @@ public class NeuralNet {
 		this.activation = activation;
 		this.alpha = alpha;
 		this.bias = new BridgeInput(bias);
+		this.numRounds = 0;
+		this.useAnnealing = useAnnealing;
 	}
 	
 	/**
@@ -184,6 +216,7 @@ public class NeuralNet {
 	 */
 	public void backpropagate(double[] input, double[] desired, double payoff)
 			throws IndexOutOfBoundsException {
+		numRounds++;
 		setInputValues(input);
 		getOutputValues();
 		Layer layer = this.getOutputLayer();
@@ -192,5 +225,20 @@ public class NeuralNet {
 			layer.backpropagate(payoff);
 			layer = layer.previous;
 		}
+	}
+	
+	/**
+	 * Return a random amount used for annealing. Calculated by
+	 * taking the initial beta value and dividing by the number
+	 * of rounds times the beta decay rate. If the random number
+	 * is greater than this value, return 0, else return this
+	 * random number.
+	 * @return Amount used for simmulated annealing
+	 */
+	protected double getAnnealingAmount() {
+		double d = rand.nextDouble();
+		if (!useAnnealing || d > INIT_BETA / (numRounds * BETA_DECAY_RATE))
+			return 0;
+		return d;
 	}
 }
