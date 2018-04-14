@@ -48,10 +48,8 @@ public class Layer {
 			new Bridge(nn.bias, neuron, NeuralNet.INIT_BIAS_WEIGHT);
 
 			if (previous == null) {
-				// add bridge to all input values
-				for (int j = 0; j < nn.inputs.length; j++) {
-					new Bridge(nn.inputs[j], neuron, nn.getInitialBridgeWeight());
-				}
+				// add bridge to corresponding input
+				new Bridge(nn.inputs[i], neuron, nn.getInitialBridgeWeight());
 			} else {
 				// add bridge to all previous layer neurons
 				for (int j = 1; j < numInputs; j++) {

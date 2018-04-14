@@ -216,7 +216,7 @@ public class NeuralNet {
 	 */
 	public void backpropagate(double[] input, double[] desired, double payoff)
 			throws IndexOutOfBoundsException {
-		numRounds++;
+		if (useAnnealing) numRounds++;
 		setInputValues(input);
 		getOutputValues();
 		Layer layer = this.getOutputLayer();
