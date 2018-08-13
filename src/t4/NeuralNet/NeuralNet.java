@@ -26,7 +26,7 @@ public class NeuralNet {
 	 */
 	public static final double INIT_BETA = 0.75;
 	/**
-	 * Rate of decay for {@link beta}. Values must be
+	 * Rate of decay for beta. Values must be
 	 * between 0 and 1, exclusive. Higher values decay slower.
 	 */
 	public static final double BETA_DECAY_RATE = 0.95;
@@ -74,6 +74,7 @@ public class NeuralNet {
 	/**
 	 * Constructs a new NeuralNet object with the Threshold activation
 	 * function, and the default learning rate and bias value.
+	 * @param numInputs Number of inputs
 	 */
 	public NeuralNet(int numInputs) {
 		this(numInputs, new Threshold(), ALPHA, BIAS, false);
@@ -82,6 +83,7 @@ public class NeuralNet {
 	/**
 	 * Constructs a new NeuralNet object with the given activation
 	 * function. Uses the default learning rate and bias values.
+	 * @param numInputs Number of inputs
 	 * @param activation Activation Function
 	 */
 	public NeuralNet(int numInputs, ActivationFunction activation) {
@@ -91,6 +93,7 @@ public class NeuralNet {
 	/**
 	 * Constructs a new NeuralNet object with the given activation
 	 * function and learning rate. Uses the default bias value.
+	 * @param numInputs Number of inputs
 	 * @param activation Activation function
 	 * @param alpha Learning rate
 	 */
@@ -101,6 +104,7 @@ public class NeuralNet {
 	/**
 	 * Constructs a new NeuralNet object with the given activation
 	 * function, learning rate, and bias value.
+	 * @param numInputs Number of inputs
 	 * @param activation Activation function
 	 * @param alpha Learning rate
 	 * @param bias Value for the bias
@@ -112,6 +116,7 @@ public class NeuralNet {
 	/**
 	 * Constructs a new NeuralNet object with the given activation
 	 * function, learning rate, and bias value.
+	 * @param numInputs Number of inputs
 	 * @param activation Activation function
 	 * @param alpha Learning rate
 	 * @param bias Value for the bias
